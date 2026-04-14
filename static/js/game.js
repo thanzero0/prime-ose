@@ -120,6 +120,7 @@ const Game = (() => {
             if (circle.time - beatmap.approachTime <= currentTime) {
                 activeCircles.push({
                     ...circle,
+                    index: state.processedIndex, // store index at spawn
                     hit: false,
                     missed: false,
                     alpha: 1
@@ -232,13 +233,12 @@ const Game = (() => {
         ctx.lineWidth = 2;
         ctx.stroke();
 
-        // Number in center
-        const circleIdx = beatmap.circles.indexOf(circle);
-        ctx.fillStyle = hexToRGBA(accentColor, 0.8);
-        ctx.font = `${Math.round(baseRadius * 0.7)}px Inter`;
+        // Number in center (1–9 cycling)
+        ctx.fillStyle = hexToRGBA(accentColor, 0.85);
+        ctx.font = `bold ${Math.round(baseRadius * 0.75)}px Inter`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText((circleIdx % 9) + 1, cx, cy);
+        ctx.fillText((circle.index % 9) + 1, cx, cy);
 
         // Approach ring
         ctx.beginPath();
@@ -339,14 +339,22 @@ const Game = (() => {
 
             // Check if click is within circle radius (with generous multiplier)
             if (dist <= baseRadius * 2.5) {
-                const timeDiff = Math.abs(currentTime - circle.time);
+                const timeDiff = currentTime - circle.time; // negative = early, positive = late
+                const absDiff = Math.abs(timeDiff);
                 
-                if (timeDiff <= beatmap.hitWindow.perfect) {
+                // Allow clicking slightly early (up to half approach time)
+                if (timeDiff < -(beatmap.approachTime * 0.5)) {
+                    continue; // Way too early
+                }
+
+                if (absDiff <= beatmap.hitWindow.perfect) {
                     hitQuality = 'perfect';
-                } else if (timeDiff <= beatmap.hitWindow.good) {
+                } else if (absDiff <= beatmap.hitWindow.good) {
                     hitQuality = 'good';
+                } else if (timeDiff > 0) {
+                    continue; // Too late
                 } else {
-                    continue; // Too early or late
+                    hitQuality = 'good'; // Slightly early but in range
                 }
 
                 hitCircle = circle;
