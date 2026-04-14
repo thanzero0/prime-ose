@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Prime-Ose — A minimalist rhythm game inspired by osu!">
+    <title>Prime-Ose | Rhythm Game</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Cursor Trail Canvas -->
+    <canvas id="cursor-trail"></canvas>
+
+    <!-- ==================== SPLASH / TITLE SCREEN ==================== -->
+    <div id="splash-screen" class="screen active">
+        <div class="splash-content">
+            <div class="logo-wrapper">
+                <div class="logo-circle pulse"></div>
+                <h1 class="logo-text">Prime<span class="accent">-Ose</span></h1>
+            </div>
+            <p class="tagline">click. to the beat.</p>
+            <button id="btn-start" class="btn-primary glow">
+                <span>Start</span>
+                <div class="btn-shine"></div>
+            </button>
+        </div>
+        <div class="splash-bg-circles">
+            <div class="bg-circle c1"></div>
+            <div class="bg-circle c2"></div>
+            <div class="bg-circle c3"></div>
+        </div>
+    </div>
+
+    <!-- ==================== LIBRARY / SONG SELECT ==================== -->
+    <div id="library-screen" class="screen">
+        <header class="library-header">
+            <button id="btn-back-splash" class="btn-icon" title="Back">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+            </button>
+            <h2>Library</h2>
+            <div class="header-spacer"></div>
+        </header>
+        <div id="song-list" class="song-list">
+            <!-- Songs will be injected here -->
+        </div>
+        <div id="song-detail" class="song-detail hidden">
+            <div class="detail-card glass">
+                <button id="btn-close-detail" class="btn-icon btn-close" title="Close">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 6L6 18M6 6l12 12"/>
+                    </svg>
+                </button>
+                <h3 id="detail-title" class="detail-title"></h3>
+                <p id="detail-artist" class="detail-artist"></p>
+                <div class="detail-meta">
+                    <span id="detail-bpm" class="meta-tag"></span>
+                    <span id="detail-duration" class="meta-tag"></span>
+                </div>
+                <div class="difficulty-select">
+                    <p class="diff-label">Difficulty</p>
+                    <div class="diff-buttons">
+                        <button class="btn-diff" data-diff="easy">
+                            <span class="diff-name">Easy</span>
+                            <span id="diff-easy-stars" class="diff-stars"></span>
+                        </button>
+                        <button class="btn-diff" data-diff="normal">
+                            <span class="diff-name">Normal</span>
+                            <span id="diff-normal-stars" class="diff-stars"></span>
+                        </button>
+                        <button class="btn-diff" data-diff="hard">
+                            <span class="diff-name">Hard</span>
+                            <span id="diff-hard-stars" class="diff-stars"></span>
+                        </button>
+                    </div>
+                </div>
+                <button id="btn-play" class="btn-primary glow">
+                    <span>Play</span>
+                    <div class="btn-shine"></div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== GAME SCREEN ==================== -->
+    <div id="game-screen" class="screen">
+        <div id="game-hud" class="game-hud">
+            <div class="hud-left">
+                <div class="health-bar-container">
+                    <div id="health-bar" class="health-bar"></div>
+                </div>
+            </div>
+            <div class="hud-center">
+                <span id="hud-combo" class="hud-combo">0x</span>
+            </div>
+            <div class="hud-right">
+                <span id="hud-score" class="hud-score">0</span>
+            </div>
+        </div>
+        <canvas id="game-canvas"></canvas>
+        <!-- Pause Overlay -->
+        <div id="pause-overlay" class="pause-overlay hidden">
+            <div class="pause-card glass">
+                <h2>Paused</h2>
+                <button id="btn-resume" class="btn-primary">Resume</button>
+                <button id="btn-quit" class="btn-secondary">Quit</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== RESULTS SCREEN ==================== -->
+    <div id="results-screen" class="screen">
+        <div class="results-card glass">
+            <h2 class="results-title">Results</h2>
+            <div id="results-rank" class="results-rank">S</div>
+            <div class="results-stats">
+                <div class="stat">
+                    <span class="stat-label">Score</span>
+                    <span id="results-score" class="stat-value">0</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Accuracy</span>
+                    <span id="results-accuracy" class="stat-value">0%</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Max Combo</span>
+                    <span id="results-combo" class="stat-value">0x</span>
+                </div>
+                <div class="stat-row">
+                    <div class="stat small">
+                        <span class="stat-label perfect">Perfect</span>
+                        <span id="results-perfect" class="stat-value">0</span>
+                    </div>
+                    <div class="stat small">
+                        <span class="stat-label good">Good</span>
+                        <span id="results-good" class="stat-value">0</span>
+                    </div>
+                    <div class="stat small">
+                        <span class="stat-label miss">Miss</span>
+                        <span id="results-miss" class="stat-value">0</span>
+                    </div>
+                </div>
+            </div>
+            <div class="results-actions">
+                <button id="btn-retry" class="btn-primary glow">
+                    <span>Retry</span>
+                    <div class="btn-shine"></div>
+                </button>
+                <button id="btn-back-library" class="btn-secondary">Back to Library</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/audio.js"></script>
+    <script src="js/beatmaps.js"></script>
+    <script src="js/library.js"></script>
+    <script src="js/game.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
